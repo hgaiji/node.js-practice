@@ -59,4 +59,13 @@ Requestに対し、Thereadを立ち上げて対応
     ```
     **処理がかかりそうな処理はcallback関数を使用して処理する**
 
+## Webサーバーの作成
+### プロセス終了方法
+1. ctrl + c
 
+2.  
+
+- ps aux | grep node
+- kill -9 <PROCESS_ID>
+
+3. killall node
