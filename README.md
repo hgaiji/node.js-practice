@@ -60,6 +60,37 @@ Requestに対し、Thereadを立ち上げて対応
     **処理がかかりそうな処理はcallback関数を使用して処理する**
 
 ## Webサーバーの作成
+### ファイル分割（exports）
+node.jsではデフォルトで`exports`という機能がある   
+
+**使い方**    
+    1.よく使う(外部ファイル)変数を`exports.{変数名} = xxx`と定義  
+    2.呼び出す元で、`var hoge = require('./xxxx')`  
+    3.`hoge.{変数名}`で外部ファイルの値を使う
+
+```javascript:config.js
+exports.port = 3000;
+
+```
+sever.js(呼び出し元)から使用
+```javascript:server.js
+var http = require('http');
+var config = require('./config');
+var server = http.createServer();
+
+server.on('request',function(req,res) {
+    res.writeHead(200, {'Content-Type' : 'text/plain'});
+    res.write('hello world');
+    res.end();
+});
+
+// サーバを待ち受け状態にする
+// 第1引数: ポート番号
+// 第2引数: IPアドレス
+server.listen(config.port);
+console.log(config.port);
+```
+
 ### プロセス終了方法
 1. ctrl + c
 
@@ -69,3 +100,16 @@ Requestに対し、Thereadを立ち上げて対応
 - kill -9 <PROCESS_ID>
 
 3. killall node
+
+## リクエストのURL毎に処理を分割
+```javascript:server.js
+(省略)
+//変更点のみ記述
+res.write('request from: ' + req.url);
+(省略)
+```
+**実行結果**
+
+![requestURL](requestURL.png "サンプル")
+![requestURL2](requestURL2.png "サンプル")  
+上記のようにリクエストURLが取れている
