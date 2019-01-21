@@ -13,8 +13,15 @@ MongoClient.connect("mongodb://localhost/"+settings.db,function(err,client){
             {name: "uchi",score:40},
             {name: "guchi",score:60},
         ];
-        collection.find().toArray(function(err,items) {
-            console.log(items);
-        })
+        // collection.find().toArray(function(err,items) {
+        //     console.log(items);
+        // })
+        var stream = collection.find().stream();
+        stream.on("data",function(item) {
+            console.log(item);
+        });
+        stream.on("end",function(){
+            console.log("finished")
+        });
     });
 });
