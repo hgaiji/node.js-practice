@@ -1,5 +1,5 @@
 # node.js
-![node.js](node.png "サンプル")
+![node.js](img/node.png "サンプル")
 ## サーバの仕組み
 **スレッドモデルとイベントループ**    
 * 大量のリクエストをさばくための処理形式
@@ -30,7 +30,7 @@ Requestに対し、Thereadを立ち上げて対応
 
 ## 記述方法
 1. ブロッキング
-    ```
+    ```javascript
     //ブロッキングな書き方
     var start = new Date().getTime();
 
@@ -42,7 +42,7 @@ Requestに対し、Thereadを立ち上げて対応
     ```
     whileの処理（1秒間）の後に`world`を表示する
 2. ノンブロッキング
-    ```
+    ```javascript
     //ノンブロッキングな書き方
     //callback関数
     setTimeout(function(){
@@ -68,12 +68,12 @@ node.jsではデフォルトで`exports`という機能がある
     2.呼び出す元で、`var hoge = require('./xxxx')`  
     3.`hoge.{変数名}`で外部ファイルの値を使う
 
-```javascript:config.js
+```javascript
 exports.port = 3000;
 
 ```
 sever.js(呼び出し元)から使用
-```javascript:server.js
+```javascript
 var http = require('http');
 var config = require('./config');
 var server = http.createServer();
@@ -110,6 +110,80 @@ res.write('request from: ' + req.url);
 ```
 **実行結果**
 
-![requestURL](requestURL.png "サンプル")
-![requestURL2](requestURL2.png "サンプル")  
+![requestURL](img/requestURL.png "サンプル")
+![requestURL2](img/requestURL2.png "サンプル")  
 上記のようにリクエストURLが取れている
+
+## リクエスト毎の処理の分割
+```javascript
+(省略)
+server.on('request',function(req,res) {
+    res.writeHead(200, {'Content-Type' : 'text/plain'});
+    //リクエストされた処理に応じて表示内容を変更
+    switch (req.url) {
+        case '/about':
+            msg = 'welcome about page';
+            break;
+        case '/company':
+            msg = 'welcome my company page';
+            break;
+        default:
+            msg = 'page not found';
+            break;
+    }
+    res.write(msg);
+    res.end();
+});
+(省略)
+```
+**実行結果**  
+- /aboutにアクセス  
+![req1](img/req1.png "req1")
+- /companyにアクセス  
+![req2](img/req2.png "req2")
+- /それ以外   
+![req3](img/req3.png "req3")  
+
+実行結果から,リクエスト毎に表示させるメッセージが変更されている
+
+## HTMLの表示  
+HTMLを読み込むために、**filesystem**を使う！   
+filesystemの使い方は右を参照 →
+[node.jsの文法](./node.js-file-operation.md "Qiita")
+
+
+server.js
+```javascript
+(省略)
+//fsモジュールを利用できる状態にする
+var fs = require('fs');
+(省略)
+server.on('request',function(req,res) {
+    //ファイルを読み込む処理は時間がかかるため.callback関数を用いてノンブロッキング処理
+    fs.readFile(__dirname + '/hello.html','utf-8',function(err,data){
+        //エラー発生時
+        if (err) {
+            res.writeHead(404,{'Content-Type' : 'text/plain'});
+            res.write('page not found');
+            return res.end();
+        }
+        res.writeHead(200, {'Content-Type' : 'text/html'});
+        //リクエストされた処理に応じて表示内容を変更
+        res.write(data);
+        res.end();
+    });
+});
+
+(省略)
+
+```
+
+hello.html  
+```html
+<body>
+    <h1>Hello world</h1>
+    <p>this page is written by node.js</p>
+</body>
+</html>
+```
+
